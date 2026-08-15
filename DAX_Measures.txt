@@ -1,0 +1,58 @@
+# Power BI DAX Measures
+
+Total Oil Production =
+SUM(vw_EnergyMarketAnalysis[OilProduction])
+
+Total Oil Consumption =
+SUM(vw_EnergyMarketAnalysis[OilConsumption])
+
+Total Gas Production =
+SUM(vw_EnergyMarketAnalysis[GasProduction])
+
+Total Gas Consumption =
+SUM(vw_EnergyMarketAnalysis[GasConsumption])
+
+Oil Supply-Demand Gap =
+[Total Oil Production] - [Total Oil Consumption]
+
+Gas Supply-Demand Gap =
+[Total Gas Production] - [Total Gas Consumption]
+
+Oil Import Dependency % =
+DIVIDE(
+    SUM(vw_EnergyMarketAnalysis[OilImports]),
+    [Total Oil Consumption],
+    0
+)
+
+Gas Import Dependency % =
+DIVIDE(
+    SUM(vw_EnergyMarketAnalysis[GasImports]),
+    [Total Gas Consumption],
+    0
+)
+
+Average Oil Price =
+AVERAGE(vw_EnergyMarketAnalysis[OilPriceUSD])
+
+Average Gas Price =
+AVERAGE(vw_EnergyMarketAnalysis[GasPriceUSD])
+
+Oil Production YoY % =
+VAR CurrentProduction = [Total Oil Production]
+VAR PreviousProduction =
+    CALCULATE(
+        [Total Oil Production],
+        DATEADD('Date'[Date], -1, YEAR)
+    )
+RETURN
+DIVIDE(CurrentProduction - PreviousProduction, PreviousProduction, 0)
+
+Market Opportunity Score =
+VAR DemandGrowth = [Total Oil Consumption]
+VAR ImportDependency = [Oil Import Dependency %]
+VAR Deficit = ABS(MIN([Oil Supply-Demand Gap], 0))
+RETURN
+    DemandGrowth * 0.4
+    + ImportDependency * 0.4
+    + Deficit * 0.2
